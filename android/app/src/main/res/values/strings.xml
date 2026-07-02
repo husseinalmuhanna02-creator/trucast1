@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TruCast</string>
+    <string name="title_activity_main">TruCast</string>
+    <string name="package_name">com.trucast.app</string>
+    <string name="custom_url_scheme">com.trucast.app</string>
+</resources>
