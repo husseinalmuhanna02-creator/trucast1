@@ -19,8 +19,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Install Capacitor CLI Globally
-        run: npm install -g @capacitor/cli @capacitor/core
+      - name: Install Capacitor Android Platform
+        run: npm install @capacitor/android @capacitor/cli @capacitor/core
 
       - name: Build Capacitor Web Assets
         run: npm run build
