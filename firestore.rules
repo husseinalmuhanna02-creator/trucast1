@@ -82,6 +82,7 @@ service cloud.firestore {
         && (data.get('isPremium', false) is bool)
         && (data.get('isVerified', false) is bool)
         && (data.get('stealthMode', false) is bool)
+        && (data.get('accountLocked', false) is bool)
         && (data.get('premiumSettings', null) == null || (
              data.premiumSettings is map &&
              (data.premiumSettings.get('bubbleColor', null) == null || data.premiumSettings.bubbleColor is string) &&
@@ -95,6 +96,15 @@ service cloud.firestore {
              (data.profileCustomization.get('fontFamily', '') is string) &&
              (data.profileCustomization.get('textColor', '') is string)
            ));
+    }
+
+    function isValidKnownDevice(data) {
+      return data.deviceId is string && data.deviceId.size() <= 128
+        && data.os is string && data.os.size() <= 100
+        && data.browser is string && data.browser.size() <= 100
+        && (data.get('isBlocked', false) is bool)
+        && (data.get('createdAt', null) == null || data.createdAt == request.time || data.createdAt is timestamp)
+        && (data.get('lastActiveAt', null) == null || data.lastActiveAt == request.time || data.lastActiveAt is timestamp);
     }
 
     function isValidReel(data) {
@@ -255,7 +265,27 @@ service cloud.firestore {
         && (data.get('createdAt', null) == null || data.createdAt == request.time || data.createdAt is timestamp);
     }
 
+    function isValidSupportTicket(data) {
+      return data.userId == request.auth.uid
+        && data.category is string && data.category.size() <= 200
+        && data.details is string && data.details.size() <= 10000
+        && (data.get('status', 'open') in ['open', 'resolved']);
+    }
+
+    function isValidActivityLog(data) {
+      return data.userId == request.auth.uid
+        && data.type is string && data.type.size() <= 100
+        && data.description is string && data.description.size() <= 1000;
+    }
+
     // --- Collection Rules ---
+
+    match /support_tickets/{ticketId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && isValidSupportTicket(incoming())
+                    && (incoming().createdAt == request.time || incoming().createdAt is timestamp);
+    }
 
     match /test/connection {
       allow read: if true;
@@ -396,6 +426,16 @@ service cloud.firestore {
         allow update: if isSignedIn() && isOwner(userId) && isValidNotification(incoming()) && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
         allow delete: if isSignedIn() && isOwner(userId);
       }
+
+      match /known_devices/{deviceId} {
+        allow read, write: if isSignedIn() && isOwner(userId);
+      }
+
+      match /activity_logs/{logId} {
+        allow list, get: if isSignedIn();
+        allow create: if isSignedIn() && isOwner(userId) && isValidActivityLog(incoming()) && (incoming().createdAt == request.time || incoming().createdAt is timestamp);
+        allow delete: if isSignedIn() && isOwner(userId);
+      }
     }
 
     match /verification_requests/{userId} {
@@ -534,13 +574,13 @@ service cloud.firestore {
             existing().get('moderatorIds', []).hasAny([request.auth.uid]) && 
             incoming().get('hostId', '') == existing().get('hostId', '') && 
             incoming().get('startedAt', null) == existing().get('startedAt', null) &&
-            incoming().diff(existing()).affectedKeys().hasOnly(['pinnedComment', 'mutedIds', 'mutedUsers', 'blockedIds', 'blockedUsers', 'poll']))
+            incoming().diff(existing()).affectedKeys().hasOnly(['pinnedComment', 'mutedIds', 'mutedUsers', 'blockedIds', 'blockedUsers', 'poll', 'hostMutedParticipants']))
             
         // Action by Viewer/Guest/Participant: Can interact with polls, pk battles, guest invites, or viewerCount
         || (isSignedIn() && 
             incoming().get('hostId', '') == existing().get('hostId', '') && 
             incoming().get('startedAt', null) == existing().get('startedAt', null) &&
-            incoming().diff(existing()).affectedKeys().hasOnly(['viewerCount', 'guestInvite', 'guest', 'pkBattle', 'poll']))
+            incoming().diff(existing()).affectedKeys().hasOnly(['viewerCount', 'guestInvite', 'guest', 'pkBattle', 'poll', 'hostMutedParticipants']))
       );
       allow delete: if isVerified() && isOwner(existing().get('hostId', ''));
 

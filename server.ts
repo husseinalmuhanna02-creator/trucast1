@@ -6,6 +6,7 @@ import fs from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
 import { GoogleGenAI, Type } from "@google/genai";
 import admin from 'firebase-admin';
+import crypto from 'crypto';
 
 import os from 'os';
 
@@ -93,7 +94,67 @@ async function startServer() {
     return aiClient;
   }
 
+  function generateStreamToken(userId: string, secret: string): string {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+      user_id: userId,
+      iat: now,
+      exp: now + 24 * 60 * 60, // 24 hours
+    };
+
+    const base64UrlEncode = (str: string): string => {
+      return Buffer.from(str)
+        .toString('base64')
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+    };
+
+    const headerEncoded = base64UrlEncode(JSON.stringify(header));
+    const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
+    const signatureInput = `${headerEncoded}.${payloadEncoded}`;
+
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(signatureInput);
+    const signatureEncoded = hmac.digest('base64')
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+
+    return `${signatureInput}.${signatureEncoded}`;
+  }
+
   // API Routes
+  app.post('/api/stream/credentials', (req, res) => {
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const customAppId = process.env.VITE_STREAM_APP_ID;
+    const streamSecret = process.env.STREAM_API_SECRET;
+
+    let apiKey = "20b134d1bc94473d9d300e8f3bf0040e"; // Fallback to demo app ID
+    let secret = "dev-signature"; // Default dummy secret for demo app ID
+
+    if (customAppId && customAppId !== "20b134d1bc94473d9d300e8f3bf0040e") {
+      if (streamSecret) {
+        apiKey = customAppId;
+        secret = streamSecret;
+      } else {
+        console.warn(`⚠️ VITE_STREAM_APP_ID is configured as "${customAppId}" but STREAM_API_SECRET is missing. Falling back to demo App ID "${apiKey}" to prevent token signature invalid errors.`);
+      }
+    }
+
+    try {
+      const token = generateStreamToken(userId, secret);
+      res.json({ apiKey, token });
+    } catch (err: any) {
+      console.error("Error generating Stream token:", err);
+      res.status(500).json({ error: 'Failed to generate Stream credentials' });
+    }
+  });
   app.post('/api/gemini/suggest-replies', async (req, res) => {
     const { commentText } = req.body;
     if (!commentText) {

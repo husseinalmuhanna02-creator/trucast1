@@ -40,22 +40,46 @@
   background-color: var(--bg-item) !important;
 }
 
-.light .text-white { 
+.light .text-white,
+.light .text-zinc-50,
+.light .text-zinc-100,
+.light .text-zinc-200,
+.light .text-zinc-300,
+.light .text-slate-50,
+.light .text-slate-100,
+.light .text-slate-200,
+.light .text-slate-300,
+.light .text-neutral-50,
+.light .text-neutral-100,
+.light .text-neutral-200,
+.light .text-neutral-300 { 
   color: var(--text-main) !important; 
 }
 
-.light .text-zinc-300 {
-  color: var(--text-main) !important;
-}
-
 .light .text-zinc-400,
-.light .text-zinc-500 { 
+.light .text-zinc-500,
+.light .text-slate-400,
+.light .text-slate-500,
+.light .text-neutral-400,
+.light .text-neutral-500 { 
   color: var(--text-muted) !important; 
 }
 
+.light .border-zinc-900,
 .light .border-zinc-800,
-.light .border-zinc-700 { 
+.light .border-zinc-700,
+.light .border-slate-800,
+.light .border-slate-700 { 
   border-color: var(--border-main) !important; 
+}
+
+.light .bg-zinc-900\/50,
+.light .bg-zinc-950\/80,
+.light .bg-zinc-900\/80,
+.light .bg-black\/80,
+.light .bg-black\/50,
+.light .bg-black\/40 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .light .shadow-xl {
@@ -67,9 +91,20 @@
 }
 
 /* Fix for icons and specific buttons in dark mode that should stay dark/light */
+.light .bg-blue-500 .text-white,
 .light .bg-blue-600 .text-white,
+.light .md\:bg-blue-600 .text-white,
+.light .bg-red-500 .text-white,
 .light .bg-red-600 .text-white,
-.light .bg-emerald-600 .text-white {
+.light .bg-emerald-500 .text-white,
+.light .bg-emerald-600 .text-white,
+.light .bg-blue-500 *,
+.light .bg-blue-600 *,
+.light .md\:bg-blue-600 *,
+.light .bg-red-500 *,
+.light .bg-red-600 *,
+.light .bg-emerald-500 *,
+.light .bg-emerald-600 * {
   color: white !important;
 }
 
@@ -197,4 +232,53 @@ body {
 .send-comment-button:active {
   transform: scale(0.9) !important;
 }
+
+/* Increase border-radius for .rounded-3xl to look softer and more fluid */
+.rounded-3xl {
+  border-radius: 2.25rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Chat Screen Light Mode Robustness */
+.light .chat-sent-bubble {
+  background: #2563eb !important; /* bg-blue-600 */
+}
+.light .chat-sent-bubble,
+.light .chat-sent-bubble * {
+  color: #ffffff !important;
+}
+.light .chat-sent-bubble svg {
+  fill: #2563eb !important;
+}
+
+.light .chat-received-bubble {
+  background-color: #e4e4e7 !important; /* bg-zinc-200 */
+  border-color: #d4d4d8 !important; /* border-zinc-300 */
+}
+.light .chat-received-bubble,
+.light .chat-received-bubble * {
+  color: #09090b !important; /* text-zinc-900 */
+}
+.light .chat-received-bubble svg {
+  fill: #e4e4e7 !important;
+}
+
+/* Ensure names and subtext of messages outside bubble are properly visible */
+.light .chat-message-time {
+  color: #52525b !important; /* text-zinc-600 */
+}
+.light .chat-sender-name {
+  color: #1d4ed8 !important; /* text-blue-700 */
+}
+
+/* Input bar light mode styles */
+.light .chat-input-field {
+  background-color: #f4f4f5 !important;
+  color: #09090b !important;
+  border-color: #e4e4e7 !important;
+}
+.light .chat-input-field::placeholder {
+  color: #71717a !important;
+}
+
 
