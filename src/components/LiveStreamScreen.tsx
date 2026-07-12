@@ -5093,7 +5093,7 @@ export const LiveStreamScreen = ({
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/stream/credentials', {
+        const response = await fetch('http://192.168.3.15:5000/api/stream/credentials', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: currentUser.uid }),
@@ -5274,7 +5274,7 @@ export const LiveStreamScreen = ({
                 }
 
                 // 2. Fetch Stream credentials
-                const response = await fetch('/api/stream/credentials', {
+                const response = await fetch('http://192.168.3.15:5000/api/stream/credentials', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ userId: currentUser.uid }),
